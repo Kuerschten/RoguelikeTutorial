@@ -10,5 +10,5 @@ class TilesetFactory:
             )
         else:
             return tcod.tileset.load_tilesheet(
-                "fonts/cp437/terminal16x16_gs_ro.png", 16, 16, tcod.tileset.CHARMAP_CP437
+                "fonts/cp437/16x16-RogueYun-AgmEdit.png", 16, 16, tcod.tileset.CHARMAP_CP437
             )
