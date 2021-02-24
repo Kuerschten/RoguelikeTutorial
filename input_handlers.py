@@ -506,7 +506,7 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
 
 class MainGameEventHandler(EventHandler):
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
 
         key = event.sym
@@ -514,12 +514,9 @@ class MainGameEventHandler(EventHandler):
 
         player = self.engine.player
 
-        if key == tcod.event.K_PERIOD and modifier & (
-            tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT
-        ):
+        if key == tcod.event.K_LESS and modifier & tcod.event.KMOD_SHIFT:
             return actions.TakeStairsAction(player)
-
-        if key in MOVE_KEYS:
+        elif key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
             action = BumpAction(player, dx, dy)
         elif key in WAIT_KEYS:
@@ -536,7 +533,7 @@ class MainGameEventHandler(EventHandler):
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.K_c:
             return CharacterScreenEventHandler(self.engine)
-        elif key == tcod.event.K_SLASH:  # TODO: Problem with QWERTZ key board (shift + 7 => /)
+        elif key == tcod.event.K_7 and modifier & tcod.event.KMOD_SHIFT:
             return LookHandler(self.engine)
 
         # No valid key was pressed
