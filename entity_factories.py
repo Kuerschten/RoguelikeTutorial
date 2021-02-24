@@ -50,6 +50,13 @@ confusion_scroll = Item(
     consumable=consumable.ConfusionConsumable(number_of_turns=10)
 )
 
+magic_missile_scroll = Item(
+    char=scroll_char,
+    color=(85, 255, 85),
+    name="Magic Missile Scroll",
+    consumable=consumable.MagicMissileDamageConsumable(damage=16)
+)
+
 lightning_scroll = Item(
     char=scroll_char,
     color=(255, 255, 0),

@@ -41,10 +41,25 @@ class Consumable(BaseComponent):
             inventory.items.remove(entity)
 
 
-class ConfusionConsumable(Consumable):
-    def __init__(self, number_of_turns: int):
-        self.number_of_turns = number_of_turns
+class HealingConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
 
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        amount_recovered = consumer.fighter.heal(self.amount)
+
+        if amount_recovered > 0:
+            self.engine.message_log.add_message(
+                f"You consume the {self.parent.name}, and recover {amount_recovered} HP!",
+                color.health_recovered
+            )
+            self.consume()
+        else:
+            raise Impossible(f"Your health is already full.")
+
+
+class SingleTargetConsumable(Consumable):
     def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
@@ -63,39 +78,43 @@ class ConfusionConsumable(Consumable):
         if not target:
             raise Impossible("You must select an enemy to target.")
         if target is consumer:
-            raise Impossible("You cannot confuse yourself!")
+            raise Impossible("You cannot target yourself!")
 
+        self.activate_internal(consumer, target)
+
+        self.consume()
+
+    def activate_internal(self, consumer, target) -> None:
+        raise NotImplementedError()
+
+
+class ConfusionConsumable(SingleTargetConsumable):
+    def __init__(self, number_of_turns: int):
+        self.number_of_turns = number_of_turns
+
+    def activate_internal(self, consumer, target) -> None:
         self.engine.message_log.add_message(
             f"The eyes of the {target.name} look vacant, as it starts to stumble around!",
-            color.status_effect_applied,
+            color.status_effect_applied
         )
         target.ai = components.ai.ConfusedEnemy(
             entity=target, previous_ai=target.ai, turns_remaining=self.number_of_turns,
         )
-        self.consume()
 
 
-class HealingConsumable(Consumable):
-    def __init__(self, amount: int):
-        self.amount = amount
-
-    def activate(self, action: actions.ItemAction) -> None:
-        consumer = action.entity
-        amount_recovered = consumer.fighter.heal(self.amount)
-
-        if amount_recovered > 0:
-            self.engine.message_log.add_message(
-                f"You consume the {self.parent.name}, and recover {amount_recovered} HP!",
-                color.health_recovered,
-            )
-            self.consume()
-        else:
-            raise Impossible(f"Your health is already full.")
-
-
-class FireballDamageConsumable(Consumable):
-    def __init__(self, damage: int, radius: int):
+class MagicMissileDamageConsumable(SingleTargetConsumable):
+    def __init__(self, damage: int):
         self.damage = damage
+
+    def activate_internal(self, consumer, target) -> None:
+        self.engine.message_log.add_message(
+            f"The {target.name} is hit by a magic missile, taking {self.damage} damage!"
+        )
+        target.fighter.take_damage(self.damage)
+
+
+class AreaTargetConsumable(Consumable):
+    def __init__(self, radius: int):
         self.radius = radius
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
@@ -109,28 +128,40 @@ class FireballDamageConsumable(Consumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
         target_xy = action.target_xy
 
         if not self.engine.game_map.visible[target_xy]:
             raise Impossible("You cannot target an area that you cannot see.")
 
         targets_hit = False
-        for actor in self.engine.game_map.actors:
-            if is_in(center_xy=(actor.x, actor.y), radius=self.radius, target_xy=target_xy):
-                self.engine.message_log.add_message(
-                    f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage!"
-                )
-                actor.fighter.take_damage(self.damage)
+        for target in self.engine.game_map.actors:
+            if is_in(center_xy=(target.x, target.y), radius=self.radius, target_xy=target_xy):
+                self.activate_internal(consumer, target)
                 targets_hit = True
 
         if not targets_hit:
             raise Impossible("There are no targets in the radius.")
         self.consume()
 
+    def activate_internal(self, consumer, target) -> None:
+        raise NotImplementedError()
 
-class LightningDamageConsumable(Consumable):
-    def __init__(self, damage: int, maximum_range: int):
+
+class FireballDamageConsumable(AreaTargetConsumable):
+    def __init__(self, damage: int, radius: int):
+        super().__init__(radius)
         self.damage = damage
+
+    def activate_internal(self, consumer, target) -> None:
+        self.engine.message_log.add_message(
+            f"The {target.name} is engulfed in a fiery explosion, taking {self.damage} damage!"
+        )
+        target.fighter.take_damage(self.damage)
+
+
+class NearestTargetConsumable(Consumable):
+    def __init__(self, maximum_range: int):
         self.maximum_range = maximum_range
 
     def activate(self, action: actions.ItemAction) -> None:
@@ -147,10 +178,22 @@ class LightningDamageConsumable(Consumable):
                     closest_distance = distance
 
         if target:
-            self.engine.message_log.add_message(
-                f"A lighting bolt strikes the {target.name} with a loud thunder, for {self.damage} damage!"
-            )
-            target.fighter.take_damage(self.damage)
+            self.activate_internal(consumer, target)
             self.consume()
         else:
-            raise Impossible("No enemy is close enough to strike.")
+            raise Impossible("No enemy is close enough.")
+
+    def activate_internal(self, consumer, target):
+        raise NotImplementedError()
+
+
+class LightningDamageConsumable(NearestTargetConsumable):
+    def __init__(self, damage: int, maximum_range: int):
+        super().__init__(maximum_range)
+        self.damage = damage
+
+    def activate_internal(self, consumer, target):
+        self.engine.message_log.add_message(
+            f"A lighting bolt strikes the {target.name} with a loud thunder, for {self.damage} damage!"
+        )
+        target.fighter.take_damage(self.damage)
