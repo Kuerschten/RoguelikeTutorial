@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from dungeon.simple import generate_dungeon as generate_simple_dungeon
+from dungeon.bsp import generate_dungeon as generate_bsp_dungeon
 from game_map import GameMap
 
 
@@ -18,8 +19,7 @@ def generate_dungeon(
     map_height: int,
     engine: Engine
 ) -> GameMap:
-    return generate_simple_dungeon(
-        max_rooms=max_rooms,
+    return generate_bsp_dungeon(
         room_min_size=room_min_size,
         room_max_size=room_max_size,
         map_width=map_width,

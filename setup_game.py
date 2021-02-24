@@ -46,7 +46,7 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message(
-        "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text
+        "Hello and welcome, adventurer, to Caverns of Green Hill!", color.welcome_text
     )
 
     dagger = copy.deepcopy(entity_factories.dagger)
@@ -82,7 +82,7 @@ class MainMenu(input_handlers.BaseEventHandler):
         console.print(
             console.width // 2,
             console.height // 2 - 4,
-            "GREEN HILL CAVERNS",
+            "CAVERNS OF GREEN HILL",
             fg=color.menu_title,
             alignment=tcod.CENTER,
         )
