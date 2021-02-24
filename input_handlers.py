@@ -15,6 +15,8 @@ from actions import (
 )
 import color
 import exceptions
+from helper.circle import draw_circle
+from helper.highlight import highlight
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -417,9 +419,7 @@ class SelectIndexHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
-        x, y = self.engine.mouse_location
-        console.tiles_rgb["bg"][x, y] = color.white
-        console.tiles_rgb["fg"][x, y] = color.black
+        highlight(console, self.engine.mouse_location)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys."""
@@ -498,17 +498,8 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         """Highlight the tile under the cursor."""
         super().on_render(console)
 
-        x, y = self.engine.mouse_location
-
-        # Draw a rectangle around the targeted area, so the player can see the affected tiles.
-        console.draw_frame(
-            x=x - self.radius - 1,
-            y=y - self.radius - 1,
-            width=self.radius ** 2,
-            height=self.radius ** 2,
-            fg=color.red,
-            clear=False,
-        )
+        # Draw a circe around the targeted area, so the player can see the affected tiles.
+        draw_circle(console, self.engine.mouse_location, self.radius)
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
@@ -533,16 +524,12 @@ class MainGameEventHandler(EventHandler):
             action = BumpAction(player, dx, dy)
         elif key in WAIT_KEYS:
             action = WaitAction(player)
-
         elif key == tcod.event.K_ESCAPE:
             raise SystemExit()
-
         elif key == tcod.event.K_v:
             return HistoryViewer(self.engine)
-
         elif key == tcod.event.K_g:
             action = PickupAction(player)
-
         elif key == tcod.event.K_i:
             return InventoryActivateHandler(self.engine)
         elif key == tcod.event.K_d:

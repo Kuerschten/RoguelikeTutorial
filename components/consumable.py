@@ -8,6 +8,7 @@ import components.ai
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
+from helper.circle import is_in
 from input_handlers import (
     ActionOrHandler,
     AreaRangedAttackHandler,
@@ -115,7 +116,7 @@ class FireballDamageConsumable(Consumable):
 
         targets_hit = False
         for actor in self.engine.game_map.actors:
-            if actor.distance(*target_xy) <= self.radius:
+            if is_in(center_xy=(actor.x, actor.y), radius=self.radius, target_xy=target_xy):
                 self.engine.message_log.add_message(
                     f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage!"
                 )
@@ -135,7 +136,7 @@ class LightningDamageConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         target = None
-        closest_distance = self.maximum_range + 1.0
+        closest_distance = self.maximum_range + 0.5
 
         for actor in self.engine.game_map.actors:
             if actor is not consumer and self.parent.gamemap.visible[actor.x, actor.y]:
