@@ -112,19 +112,19 @@ class RoomTunnelBase(BaseDungeonGenerator):
             rooms: List[RectangularRoom],
             dungeon: GameMap
     ):
-        center_of_room = self._get_random_room(rooms).random_field
+        field = self._get_random_room(rooms).random_field
 
-        dungeon.tiles[center_of_room] = tile_types.down_stairs
-        dungeon.downstairs_location = center_of_room
+        dungeon.tiles[field] = tile_types.down_stairs
+        dungeon.downstairs_location = field
 
     def _place_player(
             self,
             player: Actor,
-            rooms,
-            dungeon
+            rooms: List[RectangularRoom],
+            dungeon: GameMap
     ) -> None:
         room = self._get_random_room(rooms)
-        player.place(*room.random_field, dungeon)
+        player.place(*room.random_field, gamemap=dungeon)
 
     def _place_entities(
             self,

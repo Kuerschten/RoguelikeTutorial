@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from dungeon.bsp import BSP
+from dungeon.drunkards_walk import DrunkardsWalk
 from dungeon.simple import Simple
 from dungeon.simple_labyrinth import SimpleLabyrinth
 from game_map import GameMap
@@ -42,6 +43,14 @@ def generate_dungeon(
     """
     generator = SimpleLabyrinth(
         room_min_size=room_min_size,
+        map_width=map_width,
+        map_height=map_height,
+        engine=engine
+    )
+    """
+
+    """
+    generator = DrunkardsWalk(
         map_width=map_width,
         map_height=map_height,
         engine=engine
