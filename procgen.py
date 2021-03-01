@@ -32,6 +32,7 @@ def generate_dungeon(
     )
     """
 
+    """
     generator = BSP(
         room_min_size=room_min_size,
         room_max_size=room_max_size,
@@ -39,6 +40,7 @@ def generate_dungeon(
         map_height=map_height,
         engine=engine
     )
+    """
 
     """
     generator = SimpleLabyrinth(
@@ -49,12 +51,12 @@ def generate_dungeon(
     )
     """
 
-    """
     generator = DrunkardsWalk(
         map_width=map_width,
         map_height=map_height,
+        entity_rooms=10,
+        floor_tile_rate=0.45,
         engine=engine
     )
-    """
 
     return generator.generate_dungeon()
