@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from engine import Engine
 
 
-class DiffusionLimitedAggregation(ParticlesBase):
+class DiffusionLimitedAggregation2(ParticlesBase):
 
     def __init__(
             self,
@@ -17,7 +17,7 @@ class DiffusionLimitedAggregation(ParticlesBase):
             map_width: int,
             map_height: int,
             entity_rooms: int = 10,
-            floor_tile_rate: float = 0.3,
+            floor_tile_rate: float = 0.2,
             engine: Engine):
         super().__init__(
             map_width=map_width,
@@ -45,6 +45,18 @@ class DiffusionLimitedAggregation(ParticlesBase):
         while len(particles) < self.map_height * self.map_width * self.floor_tile_rate:
             particle_x = target_x = random.randint(1, self.map_width - 2)
             particle_y = target_y = random.randint(1, self.map_height - 2)
+
+            # Starting from edge
+            starting_direction_x, starting_direction_y = self._get_random_direction()
+
+            if starting_direction_x < 0:
+                particle_x = target_x = 1
+            elif starting_direction_x > 0:
+                particle_x = target_x = self.map_width - 2
+            elif starting_direction_y < 0:
+                particle_y = target_y = 1
+            else:
+                particle_y = target_y = self.map_height - 2
 
             step = 0
             add_particle = True

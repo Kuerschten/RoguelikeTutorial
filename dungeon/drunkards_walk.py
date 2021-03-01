@@ -15,8 +15,8 @@ class DrunkardsWalk(ParticlesBase):
             *,
             map_width: int,
             map_height: int,
-            entity_rooms: int,
-            floor_tile_rate: float,
+            entity_rooms: int = 10,
+            floor_tile_rate: float = 0.4,
             engine: Engine):
         super().__init__(
             map_width=map_width,

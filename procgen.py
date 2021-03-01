@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from dungeon.bsp import BSP
 from dungeon.diffusion_limited_aggregation import DiffusionLimitedAggregation
+from dungeon.diffusion_limited_aggregation_2 import DiffusionLimitedAggregation2
 from dungeon.drunkards_walk import DrunkardsWalk
 from dungeon.simple import Simple
 from dungeon.simple_labyrinth import SimpleLabyrinth
@@ -56,17 +57,21 @@ def generate_dungeon(
     generator = DrunkardsWalk(
         map_width=map_width,
         map_height=map_height,
-        entity_rooms=10,
-        floor_tile_rate=0.4,
         engine=engine
     )
     """
 
+    """
     generator = DiffusionLimitedAggregation(
         map_width=map_width,
         map_height=map_height,
-        entity_rooms=10,
-        floor_tile_rate=0.3,
+        engine=engine
+    )
+    """
+
+    generator = DiffusionLimitedAggregation2(
+        map_width=map_width,
+        map_height=map_height,
         engine=engine
     )
 
