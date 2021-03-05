@@ -9,6 +9,20 @@ if TYPE_CHECKING:
     from engine import Engine
 
 
+def _should_stuck(
+        particles: Set[Tuple[int, int]],
+        *,
+        x: int,
+        y: int
+) -> bool:
+    north = (x + 1, y)
+    south = (x - 1, y)
+    east = (x, y + 1)
+    west = (x, y - 1)
+
+    return north in particles or south in particles or east in particles or west in particles
+
+
 class DiffusionLimitedAggregation(ParticlesBase):
 
     def __init__(
@@ -26,6 +40,16 @@ class DiffusionLimitedAggregation(ParticlesBase):
             floor_tile_rate=floor_tile_rate,
             engine=engine
         )
+
+    def _should_break(
+            self,
+            step: int
+    ) -> bool:
+        multiply_border = self.map_width * self.map_height * self.floor_tile_rate
+        sum_border = (self.map_width + self.map_height) * 2
+        border = max(multiply_border, sum_border)
+
+        return step > border
 
     def _create_particles(self) -> Set[Tuple[int, int]]:
         particle_x = int(self.map_width / 2)
@@ -49,7 +73,7 @@ class DiffusionLimitedAggregation(ParticlesBase):
             step = 0
             add_particle = True
 
-            while (target_x, target_y) not in particles:
+            while not _should_stuck(particles, x=particle_x, y=particle_y):
                 step += 1
 
                 if 0 < target_x < self.map_width - 1 and 0 < target_y < self.map_height - 1:

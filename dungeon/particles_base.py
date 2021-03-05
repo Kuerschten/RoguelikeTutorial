@@ -146,16 +146,6 @@ class ParticlesBase(BaseDungeonGenerator):
             k=1
         )[0]
 
-    def _should_break(
-            self,
-            step: int
-    ) -> bool:
-        multiply_border = self.map_width * self.map_height * self.floor_tile_rate
-        sum_border = (self.map_width + self.map_height) * 2
-        border = max(multiply_border, sum_border)
-
-        return step > border
-
     def _place_entities(
             self,
             particles: Set[Tuple[int, int]],
